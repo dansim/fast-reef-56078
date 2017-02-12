@@ -1,4 +1,5 @@
 (function() {
+
     var render;
 
     document.cookie = retrieveClientId();
@@ -27,10 +28,13 @@
         var width = cElm.width;
         var height = cElm.height;
 
-        window.onload = window.onresize = function() {
+        var offsetFunc = function() {
             cElm.width = cElm.offsetWidth;
             cElm.height = cElm.offsetHeight;
         };
+
+        window.onload = offsetFunc;
+        window.onresize = offsetFunc;
 
         if(cElm.getContext) {
             var cCtx = cElm.getContext("2d");
@@ -55,7 +59,7 @@
 
     function initWsConnection() {
         // BEGIN SOCKET
-        var wsUri = "ws://localhost:9000/ws/connect";
+        var wsUri = 'ws://' + location.hostname  + ':' + location.port + '/ws/connect';
         var socket = new WebSocket(wsUri);
         socket.onopen = function(evt) {
             console.log("onopen", evt);
@@ -78,7 +82,14 @@
                 clientY : evt.clientY
             }));
         };
+
         //END EVENT HANDLING
     }
+
+
+    /**
+     * Init render
+     */
+    setTimeout(render, 10);
 
 })();
