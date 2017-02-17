@@ -1,11 +1,27 @@
 (function() {
 
-    var render;
+    const state = {
+        x: Math.random() * 400,
+        y: Math.random() * 400
+    };
 
-    document.cookie = retrieveClientId();
+    var
+        dx = 0,
+        dy = 0;
 
-    render = initCanvas();
-    initWsConnection();
+    document.onkeydown = function(evt) {
+        if(evt.key === 'w') { dy -= 0.2; }
+        if(evt.key === 's') { dy += 0.2; }
+        if(evt.key === 'a') { dx -= 0.2; }
+        if(evt.key === 'd') { dx += 0.2; }
+    };
+
+    document.onkeyup = function(evt) {
+        if(evt.key === 'w') { dy = 0; }
+        if(evt.key === 's') { dy = 0; }
+        if(evt.key === 'a') { dx = 0; }
+        if(evt.key === 'd') { dx = 0; }
+    };
 
     function retrieveClientId() {
         var key = "*----------------------------------------------------------*";
@@ -36,60 +52,68 @@
         window.onload = offsetFunc;
         window.onresize = offsetFunc;
 
-        if(cElm.getContext) {
-            var cCtx = cElm.getContext("2d");
-            return function render(data) {
-                cCtx.fillStyle='#000000';
-                cCtx.fillRect(0, 0, width, height);
-                if(data && data.clients) {
-                    cCtx.fillStyle = '#00FFFF';
-                    var d = { r: 10 };
-                    data.clients.forEach(function(c) {
-                        cCtx.fillText(c.clientId, c.clientX - d.r, c.clientY - (d.r + 5) );
-                        cCtx.fillRect(c.clientX - d.r, c.clientY - d.r, d.r * 2, d.r * 2);
-                    });
-                }
+        var cCtx = cElm.getContext("2d");
+        return function (data) {
+            //BG
+            cCtx.fillStyle='#000000';
+            cCtx.fillRect(0, 0, width, height);
+
+            if(data && data.clients) {
+                cCtx.fillStyle = '#00FFFF';
+                var d = { r: 10 };
+                data.clients.forEach(function(c) {
+                    cCtx.fillText(c.clientId, c.clientX - d.r, c.clientY - (d.r + 5) );
+                    cCtx.fillRect(c.clientX - d.r, c.clientY - d.r, d.r * 2, d.r * 2);
+                });
             }
-        } else {
-            return function() {
-                throw new Error('Unable to setup render function.');
-            }
-        }
+        };
     }
 
-    function initWsConnection() {
-        // BEGIN SOCKET
-        var wsUri = 'ws://' + location.hostname  + ':' + location.port + '/ws/connect';
-        var socket = new WebSocket(wsUri);
+    function initWsConnection(renderFunc, reportPosition) {
+
+        const wsUri = 'ws://' + location.hostname  + ':' + location.port + '/ws/connect';
+        const socket = new WebSocket(wsUri);
+
         socket.onopen = function(evt) {
             console.log("onopen", evt);
         };
+
         socket.onclose = function(evt) {
             console.log("onclose", evt);
         };
+
         socket.onmessage = function(evt) {
-            render(JSON.parse(evt.data));
+            renderFunc(JSON.parse(evt.data));
         };
+
         socket.onerror = function(evt) {
             console.log("onerror", evt);
         };
-        // END SOCKET
 
-        //BEGIN EVENT_HANDLING
-        window.onmousemove =  function(evt) {
+        /*
+         * Init render
+         */
+        setTimeout(renderFunc, 10);
+
+        /*
+         * reporting of position
+         */
+        setInterval(function() {
+
+            state.x += dx;
+            state.y += dy;
+
             socket.send(JSON.stringify({
-                clientX : evt.clientX,
-                clientY : evt.clientY
+                clientX : state.x,
+                clientY : state.y
             }));
-        };
 
-        //END EVENT HANDLING
+        }, 2);
+
     }
 
+    document.cookie = retrieveClientId();
 
-    /**
-     * Init render
-     */
-    setTimeout(render, 10);
+    initWsConnection(initCanvas());
 
 })();
