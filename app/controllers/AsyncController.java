@@ -1,12 +1,11 @@
 package controllers;
 
+import akka.actor.ActorSystem;
+import akka.stream.Materializer;
 import play.libs.streams.ActorFlow;
-import akka.stream.*;
-import akka.actor.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
-import scala.Function1;
 import services.ClientActor;
 import services.Clients;
 
@@ -22,7 +21,9 @@ public class AsyncController extends Controller {
     private final Clients clients;
 
     @Inject
-    public AsyncController(final ActorSystem actorSystem, final Materializer materializer, final Clients clients) {
+    public AsyncController(final ActorSystem actorSystem,
+                           final Materializer materializer,
+                           final Clients clients) {
         this.actorSystem = actorSystem;
         this.materializer = materializer;
         this.clients = clients;
@@ -33,15 +34,13 @@ public class AsyncController extends Controller {
     }
 
     public WebSocket socket() {
-        final WebSocket ws = WebSocket.Text.accept(request -> ActorFlow.actorRef(
+        return WebSocket.Text.accept(request -> ActorFlow.actorRef(
                         (out) -> ClientActor.props(
                                 out,
                                 request.cookies().get("clientId").value(),
-                                clients.register(out)),
+                                clients),
                         actorSystem,
                         materializer));
-
-        return ws;
     }
 
 }

@@ -1,35 +1,54 @@
 (function() {
 
-    const state = {
-        x: Math.random() * 400,
-        y: Math.random() * 400
+    const global = {
+        localPlayer : {
+            x: 500,
+            y: 500,
+            aim: {
+                angle: 0,
+                lineLength : 100
+            }
+        },
+        remotePlayers : []
     };
 
-    var
-        dx = 0,
-        dy = 0;
+    var moving = false;
 
-    document.onkeydown = function(evt) {
-        if(evt.key === 'w') { dy -= 0.2; }
-        if(evt.key === 's') { dy += 0.2; }
-        if(evt.key === 'a') { dx -= 0.2; }
-        if(evt.key === 'd') { dx += 0.2; }
+    window.onkeydown = function(evt) {
+        if(evt.key === 'ArrowRight') {
+            global.localPlayer.aim.angle = global.localPlayer.aim.angle + 5;
+        }
+        if(evt.key === 'ArrowLeft') {
+            global.localPlayer.aim.angle = global.localPlayer.aim.angle - 5;
+        }
+        if(global.localPlayer.aim.angle > 360) {
+            global.localPlayer.aim.angle = 0;
+        }
+        if(global.localPlayer.aim.angle < 0) {
+            global.localPlayer.aim.angle = 360;
+        }
+
+        if(evt.key === 'w') {
+            moving = true;
+        }
     };
 
-    document.onkeyup = function(evt) {
-        if(evt.key === 'w') { dy = 0; }
-        if(evt.key === 's') { dy = 0; }
-        if(evt.key === 'a') { dx = 0; }
-        if(evt.key === 'd') { dx = 0; }
+    window.onkeyup = function(evt) {
+        if(evt.key === 'w') {
+            moving = false;
+        }
     };
 
     function retrieveClientId() {
         var key = "*----------------------------------------------------------*";
         var savedId = localStorage.getItem(key);
         if(savedId) {
+            global.localPlayer.name = savedId.split("=") [1];
             return savedId;
         } else {
-            var newId = "clientId=client" + (parseInt(Math.random() * 1000));
+            let name = "client" + (parseInt(Math.random() * 1000));
+            global.localPlayer.name = name;
+            var newId = "clientId=" + name;
             localStorage.setItem(key, newId);
             return newId;
         }
@@ -54,22 +73,50 @@
 
         var cCtx = cElm.getContext("2d");
         return function (data) {
-            //BG
+
             cCtx.fillStyle='#000000';
             cCtx.fillRect(0, 0, width, height);
 
-            if(data && data.clients) {
-                cCtx.fillStyle = '#00FFFF';
-                var d = { r: 10 };
-                data.clients.forEach(function(c) {
-                    cCtx.fillText(c.clientId, c.clientX - d.r, c.clientY - (d.r + 5) );
-                    cCtx.fillRect(c.clientX - d.r, c.clientY - d.r, d.r * 2, d.r * 2);
-                });
-            }
+            var d = { r: 10 };
+
+            cCtx.fillStyle = '#00FFFF';
+            global.remotePlayers.forEach(function(c) {
+                cCtx.fillText(c.clientId, c.clientX - d.r, c.clientY - d.r );
+                cCtx.fillRect(c.clientX, c.clientY, d.r * 2, d.r * 2);
+            });
+
+            /** player **/
+            let x = global.localPlayer.x;
+            let y = global.localPlayer.y;
+            let name = global.localPlayer.name;
+
+            /** aim **/
+            let angle = global.localPlayer.aim.angle * Math.PI / 180;
+            let xAngle = Math.cos(angle);
+            let yAngle = Math.sin(angle);
+            let x0 = x + d.r;
+            let y0 = y + d.r;
+            let r  = 20;
+            let x1 = x0 + (r * xAngle);
+            let y1 = y0 + (r * yAngle);
+
+            /** render aim **/
+            cCtx.beginPath();
+            cCtx.strokeStyle = '#FFFFFF';
+            cCtx.lineWidth = 5;
+            cCtx.moveTo(x0, y0);
+            cCtx.lineTo(x1, y1);
+            cCtx.stroke();
+
+            /** render player **/
+            cCtx.fillStyle = '#00AAFF';
+            cCtx.fillText(name, x - d.r, y - d.r );
+            cCtx.fillRect(x, y, d.r * 2, d.r * 2);
+
         };
     }
 
-    function initWsConnection(renderFunc, reportPosition) {
+    function initWsConnection(renderFunc) {
 
         const wsUri = 'ws://' + location.hostname  + ':' + location.port + '/ws/connect';
         const socket = new WebSocket(wsUri);
@@ -83,7 +130,10 @@
         };
 
         socket.onmessage = function(evt) {
-            renderFunc(JSON.parse(evt.data));
+            global.remotePlayers = JSON.parse(evt.data)['clients']
+                .filter(function(client) {
+                    return client.clientId !== global.localPlayer.name
+                });
         };
 
         socket.onerror = function(evt) {
@@ -93,22 +143,39 @@
         /*
          * Init render
          */
-        setTimeout(renderFunc, 10);
+        setTimeout(function () {
 
-        /*
-         * reporting of position
-         */
-        setInterval(function() {
+            renderFunc();
 
-            state.x += dx;
-            state.y += dy;
+            /*
+             * reporting of position
+             */
+            setInterval(function() {
+                socket.send(JSON.stringify({
+                    clientX : global.localPlayer.x,
+                    clientY : global.localPlayer.y
+                }));
+            }, 10);
 
-            socket.send(JSON.stringify({
-                clientX : state.x,
-                clientY : state.y
-            }));
+            setInterval(function() {
+                if(moving) {
+                    let angle = global.localPlayer.aim.angle * Math.PI / 180;
+                    let xAngle = Math.cos(angle);
+                    let yAngle = Math.sin(angle);
+                    let velocity = 5;
+                    dy = yAngle * velocity;
+                    dx = xAngle * velocity;
+                } else {
+                    dy = 0;
+                    dx = 0;
+                }
+                global.localPlayer.x += dx;
+                global.localPlayer.y += dy;
+                renderFunc();
 
-        }, 2);
+            }, 10);
+
+        }, 10);
 
     }
 
