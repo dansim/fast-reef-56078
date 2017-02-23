@@ -37,7 +37,7 @@ public class AsyncController extends Controller {
         return WebSocket.Text.accept(request -> ActorFlow.actorRef(
                         (out) -> ClientActor.props(
                                 out,
-                                request.cookies().get("clientId").value(),
+                                request.cookies().get("id").value(),
                                 clients),
                         actorSystem,
                         materializer));

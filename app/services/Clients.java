@@ -6,7 +6,6 @@ import com.google.inject.Singleton;
 import play.libs.Json;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Singleton
 public class Clients {
@@ -25,7 +24,7 @@ public class Clients {
 
     void updateClient(final ClientStateUpdate update) {
         final Optional<ClientState> existing = clientStates().stream()
-                .filter(clientState -> clientState.clientId.equals(update.clientId))
+                .filter(clientState -> clientState.id.equals(update.id))
                 .findFirst();
 
         if(existing.isPresent()) {
