@@ -3,15 +3,17 @@ package services;
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.inject.Singleton;
+import domain.ClientState;
+import domain.ClientStateUpdate;
 import play.libs.Json;
 
 import java.util.*;
 
 @Singleton
-public class Clients {
+public class GameState {
 
     @JsonProperty("clients")
-    private Vector<ClientState> clientStates;;
+    private Vector<ClientState> clientStates;
 
     private final List<ActorRef> clientRefs = new ArrayList<>();
 
@@ -34,7 +36,7 @@ public class Clients {
         }
     }
 
-    Clients register(final ActorRef out) {
+    GameState register(final ActorRef out) {
         clientRefs.add(out);
         return this;
     }

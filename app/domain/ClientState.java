@@ -1,4 +1,4 @@
-package services;
+package domain;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +11,7 @@ public class ClientState {
     public LocalDateTime created;
     public LocalDateTime updated;
 
-    ClientState(final ClientStateUpdate update) {
+    public ClientState(final ClientStateUpdate update) {
         this.id = update.id;
         this.x = update.x;
         this.y = update.y;
@@ -20,7 +20,7 @@ public class ClientState {
         this.updated = LocalDateTime.now();
     }
 
-    void update(final ClientStateUpdate update) {
+    public void update(final ClientStateUpdate update) {
         if(update.id.equals(id)) {
             this.x = update.x;
             this.y = update.y;

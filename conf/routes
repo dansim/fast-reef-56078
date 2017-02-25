@@ -2,12 +2,10 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# An example controller showing a sample home page
 GET     /                           controllers.IndexController.index
-
-# An example controller showing how to use dependency injection
-GET     /ws/connect                 controllers.AsyncController.socket
-GET     /ws/reset                   controllers.AsyncController.reset
+GET     /ws/connect                 controllers.IndexController.socket
+GET     /ws/reset                   controllers.IndexController.reset
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET  /game/*file                    controllers.Assets.at(path="/public/js", file)
+GET  /img/*file                     controllers.Assets.at(path="/public/img", file)

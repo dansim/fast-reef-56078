@@ -1,4 +1,4 @@
-package services;
+package domain;
 
 import java.util.Objects;
 
@@ -10,20 +10,19 @@ public class ClientStateUpdate {
     public Float alpha;
     public Boolean moving;
 
-    ClientStateUpdate byClient(final String userId) {
+    public ClientStateUpdate byClient(final String userId) {
         this.id = Objects.requireNonNull(userId);
         return this;
     }
 
-    ClientStateUpdate x(final Float x) {
+    public ClientStateUpdate x(final Float x) {
         this.x = Objects.requireNonNull(x);
         return this;
     }
 
-    ClientStateUpdate y(final Float y) {
+    public ClientStateUpdate y(final Float y) {
         this.y = Objects.requireNonNull(y);
         return this;
     }
-
 
 }
