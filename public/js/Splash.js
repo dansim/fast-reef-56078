@@ -7,12 +7,12 @@
     module.directive('splash', function($state, $interval) {
         return {
             restric: 'E',
-            template : '<p style="text-align:center; font-size: 40em;"> {{ countDown }} </p>',
+            template : '<p style="text-align:center; margin:auto; font-size: 40em;"> {{ countDown }} </p>',
             scope : {
                 nextState : '@'
             },
             link: function(scope, elm, attr) {
-                scope.countDown = 4;
+                scope.countDown = 2;
                 var int = $interval(function() {
                     if(scope.countDown == 1) {
                         $interval.cancel(int);

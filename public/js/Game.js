@@ -6,86 +6,108 @@
         'space.wars.common'
     ]);
 
+    module.run(function(GameState, KeyBoard, $window) {
+
+        GameState.localPlayer.x = $window.innerWidth/2 - GameState.r;
+        GameState.localPlayer.y = $window.innerHeight/2 - GameState.r;
+        GameState.localPlayer.bounds.x = $window.innerWidth/2 - GameState.localPlayer.bounds.r;
+        GameState.localPlayer.bounds.y = $window.innerHeight/2 - GameState.localPlayer.bounds.r;
+
+        var upHandler = KeyBoard.keyboard(87); //w
+        upHandler.press = function() {
+            GameState.localPlayer.dy -= 5;
+        };
+        upHandler.release = function() {
+            GameState.localPlayer.dy += 5;
+            GameState.localPlayer.accY = 0;
+        };
+        var downHandler = KeyBoard.keyboard(83); //s
+        downHandler.press = function() {
+            GameState.localPlayer.dy += 5;
+            GameState.localPlayer.accY = 0;
+        };
+        downHandler.release = function() {
+            GameState.localPlayer.dy -= 5;
+            GameState.localPlayer.accY = 0;
+        };
+        var leftHandler = KeyBoard.keyboard(65);  //a
+        leftHandler.press = function() {
+            GameState.localPlayer.dx -= 5;
+        };
+        leftHandler.release = function() {
+            GameState.localPlayer.dx += 5;
+            GameState.localPlayer.accX = 0;
+        };
+        var rightHandler = KeyBoard.keyboard(68); //d
+        rightHandler.press = function() {
+            GameState.localPlayer.dx += 5;
+        };
+        rightHandler.release = function() {
+            GameState.localPlayer.dx -= 5;
+            GameState.localPlayer.accX = 0;
+        };
+
+        GameState.bgParts = [];
+        for(let i = 0; i < 2000; ++i) {
+            GameState.bgParts.push({
+                x: Math.random() * $window.innerWidth * 2,
+                y: Math.random() * $window.innerHeight * 2,
+                r: Math.random() * 5,
+                reGenerate : function() {
+                    if(this.x < 0) {
+                        this.x = Math.random() * $window.innerWidth * 2;
+                        this.y = Math.random() * $window.innerHeight * 2
+                    }
+                    if(this.x > $window.innerWidth) {
+                        this.x = Math.random() * $window.innerWidth * 2;
+                        this.y = Math.random() * $window.innerHeight * 2
+                    }
+                    if(this.y < 0) {
+                        this.y = Math.random() * $window.innerHeight * 2;
+                        this.x = Math.random() * $window.innerWidth * 2;
+                    }
+                    if(this.y > $window.innerHeight) {
+                        this.y = Math.random() * $window.innerHeight * 2;
+                        this.x = Math.random() * $window.innerWidth * 2;
+                    }
+                },
+                repel : function(x, y) {
+                    let distance = Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
+                    if(distance < 100) {
+                        this.y = Math.random() * $window.innerHeight * 2;
+                        this.x = Math.random() * $window.innerWidth * 2;
+                    }
+                }
+            });
+        }
+    });
+
     module.directive('game', function(GameState, PixiJs, KeyBoard) {
         return {
             restric: 'E',
-            template : '<h1 class="lead">Game</h1><a data-ui-sref="{{nextState}}">HighScore</a>',
+            template : '<div></div>',
             scope : {
                 nextState : '@'
             },
             link : function(scope, elm, attr) {
-                var renderer = PixiJs.renderer(elm);
+                scope.state = GameState.localPlayer;
 
+                var renderer = PixiJs.renderer(elm);
                 var stage = new PixiJs.pixi.Container();
                 renderer.render(stage);
 
                 var graphics = new PixiJs.pixi.Graphics();
                 stage.addChild(graphics);
 
-                //game loop
                 function gameLoop() {
                     requestAnimationFrame(gameLoop);
                     GameState.update();
-                    GameState.render(graphics);
-                    renderer.render(stage);
+                    GameState.render(graphics, stage, renderer);
                 }
-
-                var upHandler = KeyBoard.keyboard(119); //w
-                upHandler.press = function() {
-                    console.log("UP!");
-                    GameState.localPlayer.y -= 5;
-                };
-                upHandler.release = function() {};
-
-                var downHandler = KeyBoard.keyboard(115); //s
-                downHandler.press = function() {
-                    GameState.localPlayer.y += 5;
-                };
-                downHandler.release = function() {};
-
-                var leftHandler = KeyBoard.keyboard(97);  //a
-                leftHandler.press = function() {
-                    GameState.localPlayer.x -= 5;
-                };
-                leftHandler.release = function() {};
-
-                var rightHandler = KeyBoard.keyboard(100); //d
-                rightHandler.press = function() {
-                    GameState.localPlayer.x += 5;
-                };
-                rightHandler.release = function() {};
-
                 gameLoop();
-
-
-                // window.onmousemove = function(evt) {
-                //     let x = evt.screenX;
-                //     let y = evt.screenY;
-                //     GameState.updateAlpha(x, y);
-                // };
-                //
-                // window.onkeydown = function(evt) {
-                //     if(GameState.localPlayer.alpha > 360) {
-                //         GameState.localPlayer.alpha = 0;
-                //     }
-                //     if(GameState.localPlayer.alpha < 0) {
-                //         GameState.localPlayer.alpha = 360;
-                //     }
-                //
-                //     if(evt.key === 'w') {
-                //         GameState.localPlayer.moving = true;
-                //     }
-                // };
-                //
-                // window.onkeyup = function(evt) {
-                //     if(evt.key === 'w') {
-                //         GameState.localPlayer.moving = false;
-                //     }
-                // };
-
-
             }
         }
     });
+
 })();
 
