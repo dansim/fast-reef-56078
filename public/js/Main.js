@@ -11,17 +11,13 @@
     ]);
 
     module.run(['$rootScope', '$state', '$stateParams', function ($rootScope, $state, $stateParams) {
-        console.log("LOADED 1");
-
         $rootScope.$state = $state;
         $rootScope.$stateParams = $stateParams;
     }]);
 
     module.config(['$stateProvider', '$urlRouterProvider', function($stateProvider,   $urlRouterProvider) {
-
         $urlRouterProvider
             .otherwise('/');
-
         $stateProvider
             .state("splash", {
                 url: "/",

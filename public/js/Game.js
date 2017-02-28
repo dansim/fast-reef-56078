@@ -8,8 +8,8 @@
 
     module.run(function(GameState, KeyBoard, $window) {
 
-        GameState.localPlayer.x = $window.innerWidth/2 - GameState.r;
-        GameState.localPlayer.y = $window.innerHeight/2 - GameState.r;
+        GameState.localPlayer.x = $window.innerWidth/2 - GameState.localPlayer.r;
+        GameState.localPlayer.y = $window.innerHeight/2 - GameState.localPlayer.r;
         GameState.localPlayer.bounds.x = $window.innerWidth/2 - GameState.localPlayer.bounds.r;
         GameState.localPlayer.bounds.y = $window.innerHeight/2 - GameState.localPlayer.bounds.r;
 
@@ -98,15 +98,59 @@
                 var stage = new PixiJs.pixi.Container();
                 renderer.render(stage);
 
+                var style = new PixiJs.pixi.TextStyle({
+                    fontFamily: 'Arial',
+                    fontSize: 36,
+                    fontStyle: 'italic',
+                    fontWeight: 'bold',
+                    fill: ['#ffffff', '#00ff99'], // gradient
+                    stroke: '#4a1850',
+                    strokeThickness: 5,
+                    dropShadow: true,
+                    dropShadowColor: '#000000',
+                    dropShadowBlur: 4,
+                    dropShadowAngle: Math.PI / 6,
+                    dropShadowDistance: 6,
+                    wordWrap: true,
+                    wordWrapWidth: 440
+                });
+
+                var textContainer = new PixiJs.pixi.Text('Smekt', style);
+                textContainer.x = 30;
+                textContainer.y = 180;
+                stage.addChild(textContainer);
+
                 var graphics = new PixiJs.pixi.Graphics();
                 stage.addChild(graphics);
 
-                function gameLoop() {
-                    requestAnimationFrame(gameLoop);
-                    GameState.update(renderer);
-                    GameState.render(graphics, stage, renderer);
-                }
-                gameLoop();
+                PixiJs.pixi.loader.add('../img/ships.png')
+                    .load(function() {
+                        let texture = PixiJs.pixi.utils.TextureCache['../img/ships.png'];
+                        texture.frame = new PixiJs.pixi.Rectangle(
+                            0, // 5 * 64 ?
+                            0, // 3 * 64 ?
+                            64,
+                            64);
+                        let spaceship = new PixiJs.pixi.Sprite(texture);
+                        spaceship.x = 500;
+                        spaceship.y = 500;
+                        spaceship.anchor.set(0.5);
+                        stage.addChild(spaceship);
+
+                        function gameLoop() {
+                            requestAnimationFrame(gameLoop);
+                            GameState.update(renderer);
+                            GameState.render(
+                                spaceship,
+                                textContainer,
+                                graphics,
+                                stage,
+                                renderer
+                            );
+                        }
+                        gameLoop();
+
+                    });
             }
         }
     });
