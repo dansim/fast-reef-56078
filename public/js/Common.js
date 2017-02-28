@@ -106,7 +106,10 @@
         bgParts : [],
         remotePlayers : [],
         r : 10,
-        update : function() {
+        update : function(input) {
+
+            console.log(input);
+
             var self = this;
 
             if(self.localPlayer.dx < 0) {
@@ -169,9 +172,15 @@
             graphics.clear();
 
             this.bgParts.forEach(function(p) {
-                graphics.beginFill(0xFFFFFF);
-                graphics.drawRect(p.x, p.y, p.r * 2, p.r * 2);
+                //
+                // graphics.beginFill(0xFFFFFF);
+                // graphics.drawRect(p.x, p.y, p.r * 2, p.r * 2);
+                // graphics.endFill();
+
+                graphics.beginFill(0x3498db); // Blue
+                graphics.drawEllipse(p.x, p.y, p.r, p.r); // drawEllipse(x, y, width, height)
                 graphics.endFill();
+
             });
 
             var self = this;

@@ -48,11 +48,12 @@
         };
 
         GameState.bgParts = [];
-        for(let i = 0; i < 2000; ++i) {
+        for(let i = 0; i < 100; ++i) {
             GameState.bgParts.push({
                 x: Math.random() * $window.innerWidth * 2,
                 y: Math.random() * $window.innerHeight * 2,
-                r: Math.random() * 5,
+                r: 2,
+
                 reGenerate : function() {
                     if(this.x < 0) {
                         this.x = Math.random() * $window.innerWidth * 2;
@@ -71,9 +72,10 @@
                         this.x = Math.random() * $window.innerWidth * 2;
                     }
                 },
+
                 repel : function(x, y) {
                     let distance = Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
-                    if(distance < 100) {
+                    if(distance < 20) {
                         this.y = Math.random() * $window.innerHeight * 2;
                         this.x = Math.random() * $window.innerWidth * 2;
                     }
@@ -101,7 +103,7 @@
 
                 function gameLoop() {
                     requestAnimationFrame(gameLoop);
-                    GameState.update();
+                    GameState.update(renderer);
                     GameState.render(graphics, stage, renderer);
                 }
                 gameLoop();

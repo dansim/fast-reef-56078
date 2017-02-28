@@ -5,9 +5,10 @@
     var module = angular.module('space.wars.splash', []);
 
     module.directive('splash', function($state, $interval) {
+
         return {
             restric: 'E',
-            template : '<p style="text-align:center; margin:auto; font-size: 40em;"> {{ countDown }} </p>',
+            template : '<p style="text-align:center; position:absolute; top:0; bottom:0; width: 100%; background-color:black; color:whitesmoke; margin:auto; font-size: 40em;"> {{ countDown }} </p>',
             scope : {
                 nextState : '@'
             },
